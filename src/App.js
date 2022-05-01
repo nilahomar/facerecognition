@@ -11,12 +11,32 @@ import Rank from './components/Rank/Rank';
 import FaceRecognition from './components/FaceRecognition.js/FaceRecognition';
 
 function App() {
+    const [input, setInput] = useState('');
+    const [imageUrl, setImageUrl] = useState('');
+    const [box, setBox] = useState({})
+
     const particlesInit = useCallback(main => {
         loadFull(main);
     }, [])
 
-    const [input, setInput] = useState('')
-    const [imageUrl, setImageUrl] = useState('')
+    const calculateFaceLocation = (data) => {
+        const clarifaiFace = data.outputs[0].data.regions[0].region_info.bounding_box;
+        const image = document.getElementById('inputimage');
+        const width = Number(image.width);
+        const height = Number(image.height)
+        return {
+            leftCol: clarifaiFace.left_col * width,
+            topRow: clarifaiFace.top_row * height,
+            rightCol: width - (clarifaiFace.right_col * width),
+            bottomRow: height - (clarifaiFace.bottom_row * height)
+        }
+    }
+
+    const displayFaceBox = (box) => {
+        console.log(box)
+        setBox(box)
+    }
+
     const onInputChange = (e) => {
         setInput(e.target.value)
     }
@@ -59,7 +79,7 @@ function App() {
 
         fetch("https://api.clarifai.com/v2/models/" + MODEL_ID + "/versions/" + MODEL_VERSION_ID + "/outputs", requestOptions)
             .then(response => response.json())
-            .then(result => console.log(result.outputs[0].data.regions[0].region_info.bounding_box))
+            .then(result => displayFaceBox(calculateFaceLocation(result)))
             .catch(error => console.log('error', error));
 
     }
@@ -71,7 +91,7 @@ function App() {
             <Logo />
             <Rank />
             <ImageLinkForm onInputChange={onInputChange} onButtonSubmit={onButtonSubmit} />
-            <FaceRecognition imageUrl={imageUrl} />
+            <FaceRecognition imageUrl={imageUrl} box={box} />
         </div>
     );
 }
