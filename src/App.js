@@ -1,4 +1,3 @@
-
 import React, { useCallback, useState } from 'react';
 import Particles from "react-tsparticles";
 import particlesOptions from "./particles.json";
